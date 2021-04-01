@@ -1460,7 +1460,7 @@ def check_consistency(server1, server2, table1_name, table2_name,
                 else (server2.host, server2.port, err2)
             raise UtilError("Error executing CHECKSUM TABLE on '{0}@{1}': "
                             "{2}".format(*err_data))
-        if checksum1 == checksum2:
+        if checksum1[1] == checksum2[1]:
             if reporter:
                 reporter.report_state("pass")
             return None, None  # No data diffs (in any direction)
