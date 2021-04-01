@@ -555,6 +555,17 @@ def add_locking(parser):
                       "snaphot (default): consistent read using a single "
                       "transaction.")
 
+def add_skip(parser):
+    """Add the --skip option.
+
+    parser[in]        the parser instance
+    """
+    parser.add_option("--skip", action="append", dest="skip",
+                      type="string", default=None,
+                      help="skip one or more objects"
+                      "from the operation using either a specific "
+                      "name (e.g. table_foo) or a LIKE pattern (e.g. %table_bar%)"
+                      "search pattern. Repeat the --skip option for multiple patterns.")
 
 def add_exclude(parser, object_type="objects",
                 example1="db1.t1", example2="db1.t% or db%.%"):

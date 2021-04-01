@@ -454,8 +454,16 @@ def database_compare(server1_val, server2_val, db1, db2, options):
     server1_sql_mode = server1.select_variable("SQL_MODE")
     server2_sql_mode = server2.select_variable("SQL_MODE")
 
+    skip_list = evaluate_skip_patters(server1, db1, options['skip_patterns'])
+
     # Remaining operations can occur in a loop one for each object.
     for item in in_both:
+        obj_name = item[1][0]
+        if obj_name in skip_list:
+            if options['verbosity'] > 2:
+                reporter.report_errors(['Skipping ' + obj_name])
+            continue
+
         error_list = []
         debug_msgs = []
         # Set the object type
@@ -512,6 +520,24 @@ def database_compare(server1_val, server2_val, db1, db2, options):
 
     return success
 
+def evaluate_skip_patters(server_val, db, patterns):
+    # Get all databases, except those used in --exclude
+    get_dbs_query = """
+        SELECT table_name 
+        FROM information_schema.tables
+        WHERE table_schema = '{0}'
+        {1}"""
+    conditions = ""
+    if patterns:
+        # Add extra where to exclude databases in exclude_list
+        operator = 'LIKE'
+        conditions = "AND ({0})".format(" OR ".join(
+                ["table_name {0} '{1}'".format(operator, obj) for obj in patterns]
+            )
+        )
+
+    q = get_dbs_query.format(db, conditions)
+    return map(lambda r: r[0], server_val.exec_query(q))
 
 def compare_all_databases(server1_val, server2_val, exclude_list, options):
     """Perform a consistency check among all common databases on the servers
