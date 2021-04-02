@@ -51,7 +51,9 @@ from mysql.utilities.common.options import (add_difftype, add_regexp,
                                             add_ssl_options, get_ssl_dict,
                                             setup_common_options,
                                             check_password_security,
-                                            add_exclude, check_exclude_pattern)
+                                            add_exclude,
+                                            add_skip,
+                                            check_exclude_pattern)
 from mysql.utilities.common.server import connect_servers
 from mysql.utilities.common.sql_transform import (is_quoted_with_backticks,
                                                   remove_backtick_quoting,
@@ -142,6 +144,9 @@ if __name__ == '__main__':
     # Add the exclude database option
     add_exclude(parser, "databases", "db1", "db%")
 
+    # Add the skip object option
+    add_skip(parser)
+
     # Add compact option for resulting diff
     parser.add_option("-c", "--compact", action="store_true",
                       dest="compact", help="compact output from a diff.")
@@ -231,6 +236,13 @@ if __name__ == '__main__':
 
     db_idxes_l = None
 
+    # Process --skip values -- object being ignored in the operation
+    skip_list = None
+    if (opt.skip):
+        skip_list = [pattern.strip("'\"") for pattern in opt.skip]
+
+    print(skip_list)
+
     # Set options for database operations.
     options = {
         "quiet": opt.quiet,
@@ -255,6 +267,7 @@ if __name__ == '__main__':
         "all": opt.all,
         "use_regexp": opt.use_regexp,
         "exclude_patterns": exclude_list,
+        "skip_patterns": skip_list,
     }
 
     # Add ssl options to options instead of connection.
